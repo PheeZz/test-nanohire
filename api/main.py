@@ -9,6 +9,9 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    swagger_ui_parameters={
+        "persistAuthorization": True,
+    },
 )
 
 origins = ["*"]
