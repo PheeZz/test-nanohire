@@ -43,5 +43,9 @@ class RabbitMQConfig(BaseSettings):
 
 
 class Config(JWTConfig, DatabaseConfig, RabbitMQConfig):
+    SERVICE_KEY: str = (
+        "bebebeBababa"  # Сервисный ключ для аутентификации между сервисами
+    )
+
     class Config:
         env_file = ".env"

@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from api.v1.auth.router import router as auth_router
+from api.v1.vacancy.router import router as vacancy_router
 
 app = FastAPI(
     title="NanoHire API",
@@ -20,7 +21,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth_router, prefix="/api/v1")
+api_v1_router = APIRouter(prefix="/api/v1")
+api_v1_router.include_router(auth_router)
+api_v1_router.include_router(vacancy_router)
+app.include_router(api_v1_router)
 
 
 @app.get("/")

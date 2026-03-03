@@ -2,7 +2,7 @@ from typing import Any, AsyncGenerator, Annotated
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from core import settings
@@ -57,3 +57,25 @@ async def get_current_user(
     )
 
     return user
+
+
+async def verify_service_key(
+    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+) -> None:
+    """
+    Dependency для проверки наличия и валидности service key.
+
+    Извлекает service key из заголовка Authorization и сравнивает его
+    с ожидаемым значением из настроек.
+
+    Args:
+        credentials: Bearer токен из заголовка Authorization
+
+    Raises:
+        HTTPException 401: Если service key невалидный или отсутствует
+    """
+
+    service_key = credentials.credentials
+
+    if service_key != settings.SERVICE_KEY:
+        raise HTTPException(status_code=401, detail="Invalid service key")
