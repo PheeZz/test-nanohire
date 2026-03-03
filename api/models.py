@@ -23,7 +23,7 @@ import re
 
 
 class Base(DeclarativeBase):
-    id: Mapped[UUID] = mapped_column(primary_key=True, default_factory=uuid4)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
 
 
 class User(Base):
