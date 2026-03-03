@@ -5,9 +5,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, Asyn
 from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from api.core import settings
-from api.core.securiry import Security
-from api.models import User
+from core import settings
+from core.securiry import Security
+from models import User
 
 ENGINE = create_async_engine(settings.SQLALCHEMY_DATABASE_URI)
 async_session_maker = async_sessionmaker(ENGINE, expire_on_commit=False)

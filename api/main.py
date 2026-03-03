@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.api.v1.auth.router import router as auth_router
+from api.v1.auth.router import router as auth_router
 
 app = FastAPI(
     title="NanoHire API",

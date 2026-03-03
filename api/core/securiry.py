@@ -6,11 +6,11 @@ import jwt
 import bcrypt
 from sqlalchemy.ext.asyncio.session import AsyncSession
 
-from api.core import settings
+from core import settings
 from dataclasses import dataclass
 from fastapi import HTTPException, status
 
-from api.models import User
+from models import User
 
 
 @dataclass(frozen=True)

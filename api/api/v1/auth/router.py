@@ -10,8 +10,8 @@ from .schemas import (
     UserResponseS,
 )
 from .controller import AuthService
-from api.utils.dependencies import get_db_session
-from api.core.securiry import Security
+from utils.dependencies import get_db_session
+from core.securiry import Security
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

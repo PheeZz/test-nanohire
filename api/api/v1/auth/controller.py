@@ -4,8 +4,8 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from api.models import User
-from api.core.securiry import Security
+from models import User
+from core.securiry import Security
 from uuid import UUID
 from fastapi import HTTPException, status
 
