@@ -1,8 +1,8 @@
 """Initial revision
 
-Revision ID: e93e7a2b5286
+Revision ID: 65764348e598
 Revises: 
-Create Date: 2026-03-03 15:38:41.835242
+Create Date: 2026-03-04 17:41:00.203016
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'e93e7a2b5286'
+revision: str = '65764348e598'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,16 +37,12 @@ def upgrade() -> None:
     op.create_table('vacancies',
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('description', sa.Text(), nullable=False),
-    sa.Column('manager_id', sa.Uuid(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.ForeignKeyConstraint(['manager_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_index('idx_vacancy_is_active', 'vacancies', ['is_active'], unique=False)
-    op.create_index('idx_vacancy_manager_id', 'vacancies', ['manager_id'], unique=False)
     op.create_table('responses',
     sa.Column('vacancy_id', sa.Uuid(), nullable=False),
     sa.Column('first_name', sa.String(length=100), nullable=False),
@@ -86,8 +82,6 @@ def downgrade() -> None:
     op.drop_index('idx_response_vacancy_id', table_name='responses')
     op.drop_index('idx_response_status', table_name='responses')
     op.drop_table('responses')
-    op.drop_index('idx_vacancy_manager_id', table_name='vacancies')
-    op.drop_index('idx_vacancy_is_active', table_name='vacancies')
     op.drop_table('vacancies')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')

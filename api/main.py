@@ -6,11 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.v1.auth.router import router as auth_router
 from api.v1.vacancy.router import router as vacancy_router
 from rpc import consume
-
+from fastapi.responses import RedirectResponse
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: ANN201, ARG001
-    """Lifespan context manager for the FastAPI application."""
     loop = asyncio.get_event_loop()
     asyncio.ensure_future(consume(loop))
     yield
@@ -27,13 +26,6 @@ app = FastAPI(
     },
     lifespan=lifespan,
 )
-
-
-# @app.on_event("startup")
-# def startup():
-#     loop = asyncio.get_event_loop()
-#     # use the same loop to consume
-#     asyncio.ensure_future(consume(loop))
 
 
 origins = ["*"]
@@ -54,13 +46,11 @@ app.include_router(api_v1_router)
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
-    return {"status": "ok", "message": "API is running"}
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health")
 async def health_check():
-    """Проверка здоровья сервиса"""
     return {"status": "healthy"}
 
 

@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from fastapi import Depends, HTTPException
 from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials
-
+from fastapi import Request
 from core import settings
 
 ENGINE = create_async_engine(settings.SQLALCHEMY_DATABASE_URI)
@@ -35,7 +35,7 @@ async def verify_service_key(
     с ожидаемым значением из настроек.
 
     Args:
-        credentials: Bearer токен из заголовка Authorization
+        credentials: токен из заголовка X-API-KEY
 
     Raises:
         HTTPException 401: Если service key невалидный или отсутствует
@@ -45,3 +45,8 @@ async def verify_service_key(
 
     if service_key != settings.SERVICE_KEY:
         raise HTTPException(status_code=401, detail="Invalid service key")
+
+
+def get_rpc(request: Request):
+    rpc = request.app.state.rpc
+    return rpc

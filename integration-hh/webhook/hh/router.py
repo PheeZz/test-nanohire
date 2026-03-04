@@ -1,10 +1,11 @@
 from typing import Annotated
 
+from aio_pika.patterns import RPC
 from fastapi import APIRouter, Response
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from utils.dependencies import get_db_session
+from utils.dependencies import get_db_session, verify_service_key, get_rpc
 from .controller import HHController
 from .schemas import HHNewResponseOrInvitationVacancyWH
 from fastapi import status
@@ -12,10 +13,15 @@ from fastapi import status
 router = APIRouter(prefix="/hh", tags=["hh"])
 
 
-@router.post(path="/", summary="Обработка вебхуков от HeadHunter")
+@router.post(
+    path="/",
+    summary="Обработка вебхуков от HeadHunter",
+    dependencies=[Depends(verify_service_key)],
+)
 async def handle_hh_webhook(
     incoming_data: HHNewResponseOrInvitationVacancyWH,
     session: Annotated[AsyncSession, Depends(get_db_session)],
+    rpc: Annotated[RPC, Depends(get_rpc)],
 ):
     resume = await HHController.get_resume_data(
         resume_id=incoming_data.payload.resume_id
@@ -35,8 +41,10 @@ async def handle_hh_webhook(
     ):
         return Response(status_code=status.HTTP_409_CONFLICT)
 
-    # send in rabbit
-    ...
+    await HHController.send_vacancy_response(
+        rpc=rpc, resume_response=resume, vacancy_id=incoming_data.payload.vacancy_id
+    )
+
     await HHController.save_matching(
         resume_id=incoming_data.payload.resume_id,
         vacancy_id=incoming_data.payload.vacancy_id,

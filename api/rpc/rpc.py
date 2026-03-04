@@ -4,11 +4,11 @@ from aio_pika.patterns import RPC
 from core import settings
 
 
-async def remote_method():
+async def remote_method(string: str):
     # DO SOMETHING
     # Move this method along with others to another place e.g. app/rpc_methods
     # I put it here for simplicity
-    return "It works!"
+    return f"It works! {string}"
 
 
 async def consume(loop):

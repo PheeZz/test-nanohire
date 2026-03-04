@@ -20,7 +20,6 @@ class AuthService:
         first_name: str,
         last_name: str,
         middle_name: str | None,
-        hh_manager_id: str,
         session: AsyncSession,
     ) -> User:
         """
@@ -32,7 +31,6 @@ class AuthService:
             first_name: Имя
             last_name: Фамилия
             middle_name: Отчество (опционально)
-            hh_manager_id: ID менеджера в HeadHunter
             session: Сессия БД
 
         Returns:
@@ -60,7 +58,6 @@ class AuthService:
             first_name=first_name,
             last_name=last_name,
             middle_name=middle_name,
-            hh_manager_id=hh_manager_id,
         )
 
         session.add(new_user)

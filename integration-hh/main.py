@@ -1,9 +1,37 @@
+import asyncio
+from contextlib import asynccontextmanager
+
+from aio_pika import connect_robust
+from aio_pika.patterns import RPC
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.params import Depends
+from fastapi.responses import RedirectResponse
 
 from core import settings
+from utils.dependencies import get_rpc
 from webhook import webhook_router
 from api import api_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa: ANN201, ARG001
+    loop = asyncio.get_event_loop()
+    connection = await connect_robust(
+        host=settings.RABBITMQ_HOST,
+        port=settings.RABBITMQ_PORT,
+        login=settings.RABBITMQ_USER,
+        password=settings.RABBITMQ_PASSWORD,
+        loop=loop,
+    )
+    channel = await connection.channel()
+    rpc = await RPC.create(channel)
+    app.state.rpc = rpc
+    yield
+    await rpc.close()
+    await channel.close()
+    await connection.close()
+
 
 app = FastAPI(
     title="NanoHire HH Integration API",
@@ -13,6 +41,7 @@ app = FastAPI(
     swagger_ui_parameters={
         "persistAuthorization": True,
     },
+    lifespan=lifespan,
 )
 
 origins = ["*"]
@@ -31,8 +60,15 @@ app.include_router(api_router)
 
 @app.get("/")
 async def root():
-    """Health check endpoint"""
-    return {"status": "ok", "message": "API is running"}
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/test")
+async def test_rpc(rpc=Depends(get_rpc)):
+    """Тестовый эндпоинт для проверки работы RPC"""
+    result = await rpc.proxy.remote_method(string="hello from RPC integration api test")
+    print(result)
+    return {"rpc_result": result}
 
 
 @app.get("/health")

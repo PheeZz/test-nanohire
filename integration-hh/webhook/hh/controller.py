@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from adapters.hh import HHAdapter, ResumeResponse
+from adapters.hh.schemas import StrippedResumeResponse, StrippedContact
 from exceptions.external import (
     HHApiTooManyRequestsError,
     HHApiUnauthorizedError,
@@ -9,6 +10,7 @@ from exceptions.external import (
 
 from models import VacancyToResponseResume
 from sqlalchemy import select
+from aio_pika.patterns import RPC
 
 
 class HHController:
@@ -65,3 +67,31 @@ class HHController:
         await session.commit()
 
         return
+
+    @classmethod
+    async def send_vacancy_response(
+        cls,
+        rpc: RPC,
+        resume_response: ResumeResponse,
+        vacancy_id: str,
+    ) -> None:
+        stripped_contacts = [
+            StrippedContact(
+                type=contact.type.name,
+                value=contact.value,
+            )
+            for contact in resume_response.contact
+        ]
+
+        msg = StrippedResumeResponse(
+            id=resume_response.id,
+            first_name=resume_response.first_name,
+            middle_name=resume_response.middle_name,
+            last_name=resume_response.last_name,
+            contacts=stripped_contacts,
+        )
+
+        await rpc.proxy.add_vacancy_response_to_db(
+            resume_response=msg.model_dump(),
+            vacancy_id=vacancy_id,
+        )

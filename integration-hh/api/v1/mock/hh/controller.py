@@ -6,6 +6,7 @@ class HHMockController:
     def generate_random_resume_data(cls) -> dict:
         fake = faker.Faker(locale="ru_RU")
         return {
+            "id": fake.uuid4(),
             "first_name": fake.first_name(),
             "last_name": fake.last_name(),
             "position": "Software Engineer",
