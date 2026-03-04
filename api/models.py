@@ -81,6 +81,9 @@ class Vacancy(Base):
 
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
+    manager_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -98,6 +101,11 @@ class Vacancy(Base):
     manager: Mapped["User"] = relationship("User", back_populates="vacancies")
     responses: Mapped[list["Response"]] = relationship(
         "Response", back_populates="vacancy", cascade="all, delete-orphan"
+    )
+
+    __table_args__ = (
+        Index("idx_vacancy_manager_id", "manager_id"),
+        Index("idx_vacancy_is_active", "is_active"),
     )
 
 
