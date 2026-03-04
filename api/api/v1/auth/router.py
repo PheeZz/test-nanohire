@@ -46,6 +46,7 @@ async def register(
         first_name=user_data.first_name,
         last_name=user_data.last_name,
         middle_name=user_data.middle_name,
+        hh_manager_id=user_data.hh_manager_id,
         session=session,
     )
 

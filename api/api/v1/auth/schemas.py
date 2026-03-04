@@ -16,6 +16,7 @@ class RegisterUserS(BaseModel):
     first_name: str = Field(min_length=1, max_length=100)
     middle_name: str | None = Field(None, max_length=100)
     last_name: str = Field(min_length=1, max_length=100)
+    hh_manager_id: str = Field(max_length=255)
 
 
 class UserResponseS(BaseModel):
@@ -25,6 +26,7 @@ class UserResponseS(BaseModel):
     first_name: str
     middle_name: str | None
     last_name: str
+    hh_manager_id: str
     is_active: bool
     created_at: datetime
 

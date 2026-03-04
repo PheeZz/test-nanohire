@@ -38,6 +38,9 @@ class User(Base):
         String(255), unique=True, nullable=False, index=True
     )
     password: Mapped[str] = mapped_column(String(255), nullable=False)
+    hh_manager_id: Mapped[str | None] = mapped_column(
+        String(255), unique=True, nullable=False, index=True
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
