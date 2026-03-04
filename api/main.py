@@ -1,7 +1,20 @@
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from api.v1.auth.router import router as auth_router
 from api.v1.vacancy.router import router as vacancy_router
+from rpc import consume
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa: ANN201, ARG001
+    """Lifespan context manager for the FastAPI application."""
+    loop = asyncio.get_event_loop()
+    asyncio.ensure_future(consume(loop))
+    yield
+
 
 app = FastAPI(
     title="NanoHire API",
@@ -12,7 +25,16 @@ app = FastAPI(
     swagger_ui_parameters={
         "persistAuthorization": True,
     },
+    lifespan=lifespan,
 )
+
+
+# @app.on_event("startup")
+# def startup():
+#     loop = asyncio.get_event_loop()
+#     # use the same loop to consume
+#     asyncio.ensure_future(consume(loop))
+
 
 origins = ["*"]
 # noinspection PyTypeChecker

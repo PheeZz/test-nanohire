@@ -38,6 +38,10 @@ class RabbitMQConfig(BaseSettings):
     RABBITMQ_PASSWORD: str = "guest"
     EXCHANGE_NAME: str = "nanohire_exchange"
 
+    @property
+    def RABBITMQ_URI(self) -> str:
+        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}/"
+
     class Config:
         env_file = ".env"
 

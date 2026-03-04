@@ -1,20 +1,10 @@
 from pydantic_settings import BaseSettings
 
 
-class JWTConfig(BaseSettings):
-    JWT_SECRET: str = "your_secret_key"
-    JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 7
-
-    class Config:
-        env_file = ".env"
-
-
 class DatabaseConfig(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
-    DB_NAME: str = "nanohire_test_db"
+    DB_NAME: str = "nanohire_hh_integration_test_db"
     DB_USER: str = "pheezz"
     DB_PASSWORD: str = "postgres"
 
@@ -42,7 +32,7 @@ class RabbitMQConfig(BaseSettings):
         env_file = ".env"
 
 
-class Config(JWTConfig, DatabaseConfig, RabbitMQConfig):
+class Config(DatabaseConfig, RabbitMQConfig):
     SERVICE_KEY: str = (
         "bebebeBababa"  # Сервисный ключ для аутентификации между сервисами
     )

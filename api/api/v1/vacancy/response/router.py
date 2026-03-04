@@ -12,6 +12,7 @@ router = APIRouter(prefix="/response", tags=["vacancy responses"])
 )
 async def list_responses_by_manager(
     manager_id: str,
+    count_only: bool = True,
 ):
     """
     Получить отклики на вакансии менеджера.
