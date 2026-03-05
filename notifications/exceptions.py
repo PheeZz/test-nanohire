@@ -1,0 +1,2 @@
+class SomeSendNotificationException(Exception):
+    pass
