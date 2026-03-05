@@ -1,5 +1,6 @@
 from aio_pika import connect_robust
 from aio_pika.patterns import RPC
+from .methods import add_vacancy_response_to_db
 
 from core import settings
 
@@ -23,4 +24,8 @@ async def consume(loop):
     rpc = await RPC.create(channel)
 
     await rpc.register("remote_method", remote_method, auto_delete=True)
+    await rpc.register(
+        "add_vacancy_response_to_db", add_vacancy_response_to_db, auto_delete=True
+    )
+
     return connection

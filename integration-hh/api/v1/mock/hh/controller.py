@@ -8,6 +8,7 @@ class HHMockController:
         return {
             "id": fake.uuid4(),
             "first_name": fake.first_name(),
+            "middle_name": fake.middle_name(),
             "last_name": fake.last_name(),
             "position": "Software Engineer",
             "contact": [

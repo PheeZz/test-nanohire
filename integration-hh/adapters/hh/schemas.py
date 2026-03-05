@@ -7,19 +7,20 @@ class ContactType(BaseModel):
 
 
 class Contact(BaseModel):
-    comment: str | None
+    comment: str | None = None
     contact_value: str
     kind: str
-    need_verification: bool | None
+    need_verification: bool | None = None
     preferred: bool
     type: ContactType
-    verified: bool | None
-    links: dict[str, str] | None
+    verified: bool | None = None
+    links: dict[str, str] | None = None
 
 
 class ResumeResponse(BaseModel):
     id: str
     first_name: str
+    middle_name: str | None = None
     last_name: str
     position: str
     contact: list[Contact]

@@ -3,7 +3,7 @@ from typing import Any, AsyncGenerator, Annotated
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 from fastapi import Depends, HTTPException
-from fastapi.security import APIKeyHeader, HTTPAuthorizationCredentials
+from fastapi.security import APIKeyHeader
 from fastapi import Request
 from core import settings
 
@@ -26,7 +26,7 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, Any]:
 
 
 async def verify_service_key(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
+    credentials: Annotated[str, Depends(security)],
 ) -> None:
     """
     Dependency для проверки наличия и валидности service key.
@@ -41,7 +41,11 @@ async def verify_service_key(
         HTTPException 401: Если service key невалидный или отсутствует
     """
 
-    service_key = credentials.credentials
+    service_key = credentials
+    if not service_key or not isinstance(service_key, str):
+        raise HTTPException(
+            status_code=401, detail="Service key is required and must be a string"
+        )
 
     if service_key != settings.SERVICE_KEY:
         raise HTTPException(status_code=401, detail="Invalid service key")

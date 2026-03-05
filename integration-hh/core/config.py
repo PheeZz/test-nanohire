@@ -38,6 +38,7 @@ class Config(DatabaseConfig, RabbitMQConfig):
     )
     WEB_SERVER_PORT: int = 8080
     HH_API_TOKEN: str = "pipiPupu"
+    HH_API_URL: str = "http://localhost:8080/api/v1/mock/hh"
 
     class Config:
         env_file = ".env"

@@ -7,6 +7,7 @@ from exceptions.external import (
     HHApiUnauthorizedError,
     HHApiNotFoundError,
 )
+from exceptions.internal import InternalVacancyNotFoundError
 
 from models import VacancyToResponseResume
 from sqlalchemy import select
@@ -78,7 +79,7 @@ class HHController:
         stripped_contacts = [
             StrippedContact(
                 type=contact.type.name,
-                value=contact.value,
+                value=contact.contact_value,
             )
             for contact in resume_response.contact
         ]
@@ -90,8 +91,10 @@ class HHController:
             last_name=resume_response.last_name,
             contacts=stripped_contacts,
         )
-
-        await rpc.proxy.add_vacancy_response_to_db(
-            resume_response=msg.model_dump(),
-            vacancy_id=vacancy_id,
-        )
+        try:
+            await rpc.proxy.add_vacancy_response_to_db(
+                resume_response=msg.model_dump(),
+                vacancy_id=vacancy_id,
+            )
+        except ValueError:
+            raise InternalVacancyNotFoundError

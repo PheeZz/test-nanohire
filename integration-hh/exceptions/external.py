@@ -1,7 +1,4 @@
-class BaseCustomException(Exception):
-    """Base class for custom exceptions."""
-
-    pass
+from .base import BaseCustomException
 
 
 class HHApiTooManyRequestsError(BaseCustomException):

@@ -11,7 +11,7 @@ from exceptions.external import (
 
 
 class HHAdapter:
-    API_URL = f"http://localhost:{settings.WEB_SERVER_PORT}/api/v1/mock/hh/"
+    API_URL = settings.HH_API_URL
 
     @classmethod
     async def get_resume_details(cls, resume_id: str) -> ResumeResponse | None:
@@ -19,7 +19,7 @@ class HHAdapter:
         Тут правильно наверное было бы добавить REDIS для кеширования резюме на N часов, чтобы
         лишний раз не триггерить HTTP 429. Если же все таки ловим - положить в отдельную очередь на повторную обработку.
         """
-        url = f"{cls.API_URL}/vacancies/{resume_id}"
+        url = f"{cls.API_URL}/resumes/{resume_id}"
 
         async with (
             aiohttp.ClientSession(

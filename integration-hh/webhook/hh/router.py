@@ -3,8 +3,10 @@ from typing import Annotated
 from aio_pika.patterns import RPC
 from fastapi import APIRouter, Response
 from fastapi.params import Depends
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from exceptions.internal import InternalVacancyNotFoundError
 from utils.dependencies import get_db_session, verify_service_key, get_rpc
 from .controller import HHController
 from .schemas import HHNewResponseOrInvitationVacancyWH
@@ -41,9 +43,17 @@ async def handle_hh_webhook(
     ):
         return Response(status_code=status.HTTP_409_CONFLICT)
 
-    await HHController.send_vacancy_response(
-        rpc=rpc, resume_response=resume, vacancy_id=incoming_data.payload.vacancy_id
-    )
+    try:
+        await HHController.send_vacancy_response(
+            rpc=rpc, resume_response=resume, vacancy_id=incoming_data.payload.vacancy_id
+        )
+    except InternalVacancyNotFoundError:
+        logger.warning(
+            f"Внутренняя ошибка: вакансия с id {incoming_data.payload.vacancy_id}"
+            f" не найдена при обработке резюме с id {incoming_data.payload.resume_id}"
+        )
+        # тут, конечно под вопросом что лучше возвращать
+        return Response(status_code=status.HTTP_404_NOT_FOUND)
 
     await HHController.save_matching(
         resume_id=incoming_data.payload.resume_id,

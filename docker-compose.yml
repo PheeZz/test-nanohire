@@ -1,0 +1,152 @@
+services:
+
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: nanohire-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "54320:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nanohire-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: nanohire-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "56720:5672"    # AMQP
+      - "56721:15672"   # UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nanohire-network
+
+
+  db-init:
+    image: postgres:16-alpine
+    container_name: nanohire-db-init
+    environment:
+      PGPASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - nanohire-network
+    restart: "no"
+    command: >
+      sh -c "
+        psql -h postgres -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'nanohire_api'\" | grep -q 1 || psql -h postgres -U postgres -c \"CREATE DATABASE nanohire_api\";
+        psql -h postgres -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'nanohire_integration'\" | grep -q 1 || psql -h postgres -U postgres -c \"CREATE DATABASE nanohire_integration\";
+      "
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: nanohire-api
+    ports:
+      - "18000:8000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: nanohire_api
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      JWT_SECRET: your_secret_key
+      SERVICE_KEY: bebebeBababa
+      WEB_SERVER_PORT: 8000
+      GUNICORN_WORKERS: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    networks:
+      - nanohire-network
+    restart: unless-stopped
+
+  integration-hh:
+    build:
+      context: ./integration-hh
+      dockerfile: Dockerfile
+    container_name: nanohire-integration-hh
+    ports:
+      - "18080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: nanohire_integration
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASSWORD: guest
+      SERVICE_KEY: bebebeBababa
+      HH_API_TOKEN: pipiPupu
+      WEB_SERVER_PORT: 8080
+      GUNICORN_WORKERS: 2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+    networks:
+      - nanohire-network
+    restart: unless-stopped
+
+  notifications:
+    build:
+      context: ./notifications
+      dockerfile: Dockerfile
+    container_name: nanohire-notifications
+    environment:
+      API_BASE_URL: http://api:8000
+      API_SERVICE_KEY: bebebeBababa
+      SCHEDULER_TIMEZONE: Europe/Moscow
+      SCHEDULER_HOUR: 8
+      SCHEDULER_MINUTE: 0
+    depends_on:
+      api:
+        condition: service_started
+    networks:
+      - nanohire-network
+    restart: unless-stopped
+
+
+volumes:
+  postgres_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+
+networks:
+  nanohire-network:
+    driver: bridge
